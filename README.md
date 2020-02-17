@@ -1,4 +1,4 @@
-##Ansible-wordpress
+# Ansible-wordpress
 
 This is an Ansible playbook to install wordpress on amazon linux. This will also install lamp on the ec2 server. In this playbook we are using prompt to input variables.
 
@@ -23,7 +23,7 @@ This is an Ansible playbook to install wordpress on amazon linux. This will also
 
 ***
 
-####wp-config.php.j2
+#### wp-config.php.j2
 
 		<?php
 		
