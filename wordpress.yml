@@ -6,45 +6,45 @@
   become: true
 
   vars_prompt:
-	
+
     - name: "mysql_root_password"
       prompt: "Set a new root password for MySQL: "
       private: yes
-	
+
     - name: "mysql_database"
       prompt: "Name of the database for WordPress: "
       private: no
-	
+
     - name: "mysql_user"
       prompt: "MySQL database username"
       private: no
-	
+
     - name: "mysql_password"
       prompt: "MySQL database password"
       private: yes
-	
+
     - name: "domain_name"
       prompt: "Enter the Domain name (Use Fully Qualified Domain name ):"
       private: no
-	
-	
+
+
   tasks:
-	
+
     - name: "Mariadb - Server Installation"
       yum:
         name:
           - mariadb-server
           - MySQL-python
         state: latest
-	
-	
+
+
     - name: "Mariadb - Restarting/Enabling"
       service:
         name: mariadb
         state: restarted
         enabled: true
-	
-	
+
+
     - name: "Mariadb - Setting Root Password"
       ignore_errors: true
       mysql_user:
