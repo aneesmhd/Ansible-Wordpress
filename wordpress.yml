@@ -1,154 +1,154 @@
-###Playbook
+## Playbook
 
-	---
-	- name: "Installing Wordpress Using Apache, PHP & MySQL"
-	  hosts: redhat
-	  become: true
+---
+- name: "Installing Wordpress Using Apache, PHP & MySQL"
+  hosts: redhat
+  become: true
+
+  vars_prompt:
 	
-	  vars_prompt:
+    - name: "mysql_root_password"
+      prompt: "Set a new root password for MySQL: "
+      private: yes
 	
-	    - name: "mysql_root_password"
-	      prompt: "Set a new root password for MySQL: "
-	      private: yes
+    - name: "mysql_database"
+      prompt: "Name of the database for WordPress: "
+      private: no
 	
-	    - name: "mysql_database"
-	      prompt: "Name of the database for WordPress: "
-	      private: no
+    - name: "mysql_user"
+      prompt: "MySQL database username"
+      private: no
 	
-	    - name: "mysql_user"
-	      prompt: "MySQL database username"
-	      private: no
+    - name: "mysql_password"
+      prompt: "MySQL database password"
+      private: yes
 	
-	    - name: "mysql_password"
-	      prompt: "MySQL database password"
-	      private: yes
-	
-	    - name: "domain_name"
-	      prompt: "Enter the Domain name (Use Fully Qualified Domain name ):"
-	      private: no
-	
-	
-	  tasks:
-	
-	    - name: "Mariadb - Server Installation"
-	      yum:
-	        name:
-	          - mariadb-server
-	          - MySQL-python
-	        state: latest
+    - name: "domain_name"
+      prompt: "Enter the Domain name (Use Fully Qualified Domain name ):"
+      private: no
 	
 	
-	    - name: "Mariadb - Restarting/Enabling"
-	      service:
-	        name: mariadb
-	        state: restarted
-	        enabled: true
+  tasks:
+	
+    - name: "Mariadb - Server Installation"
+      yum:
+        name:
+          - mariadb-server
+          - MySQL-python
+        state: latest
 	
 	
-	    - name: "Mariadb - Setting Root Password"
-	      ignore_errors: true
-	      mysql_user:
-	        login_user: "root"
-	        login_password: ""
-	        user: "root"
-	        password: "{{ mysql_root_password }}"
-	        host_all: true
+    - name: "Mariadb - Restarting/Enabling"
+      service:
+        name: mariadb
+        state: restarted
+        enabled: true
 	
 	
-	    - name: "Mariadb - Removing Anonymous Users"
-	      ignore_errors: true
-	      mysql_user:
-	        login_user: "root"
-	        login_password: "{{ mysql_root_password }}"
-	        user: ""
-	        state: absent
-	        host_all: true
-	
-	
-	    - name: "Mariadb - Creating Database"
-	      mysql_db:
-	        login_user: "root"
-	        login_password: "{{ mysql_root_password }}"
-	        name: "{{ mysql_database }}"
-	        state: present
-	
-	
-	    - name: "Mariadb - Creating User"
-	      mysql_user:
-	        login_user: "root"
-	        login_password: "{{ mysql_root_password }}"
-	        name: "{{ mysql_user }}"
-	        password: "{{ mysql_password }}"
-	        host: "localhost"
-	        priv: "{{ mysql_database }}.*:ALL"
-	
-	
-	    - name: "Webserver - Installing Apache & PHP on"
-	      yum:
-	        name: 
-	          - httpd
-	          - php
-	          - php-mysql
-	        state: present
-	
-	
-	    - name: "Webserver - Creating Virtualhost"
-	      template:
-	        src: virtualhost.j2
-	        dest: "/etc/httpd/conf.d/{{ domain_name }}.conf"
-	        owner: apache
-	        group: apache
-	
-	
-	    - name: "Webserver - Creating Documentroot"
-	      file:
-	        path: "/var/www/html/{{ domain_name }}"
-	        state: directory
-	        owner: apache
-	        group: apache
-	
-	
-	    - name: "Webserver - Restart/Enable Apache"
-	      service:
-	        name: httpd
-	        state: restarted
-	        enabled: true
-	
-	
-	    - name: "Wordpress  - Downloading"
-	      get_url:
-	        url: https://wordpress.org/wordpress-4.7.8.tar.gz
-	        dest: /tmp/wordpress.tar.gz
-	
-	
-	    - name: "Wordpress - Extrating"
-	      unarchive:
-	        src: /tmp/wordpress.tar.gz
-	        dest: /tmp/
-	        remote_src: true
-	
-	
-	    - name: "Wordpress - Copying Conents to documentroot"
-	      copy:
-	        src: /tmp/wordpress/
-	        dest: "/var/www/html/{{ domain_name }}"
-	        remote_src: true
-	        owner: apache
-	        group: apache
-	
-	
-	    - name: "Wordpress - Copying wp-config.php template"
-	      template:
-	        src: wp-config.php.j2
-	        dest: "/var/www/html/{{ domain_name }}/wp-config.php"
-	        owner: apache
-	        group: apache
-	
-	
-	    - name: "Wordpress - Post Installation clean up"
-	      file:
-	        path: "{{ item }}"
-	        state: absent
-	      with_items:
-	        - /tmp/wordpress.tar.gz
-	        - /tmp/wordpress
+    - name: "Mariadb - Setting Root Password"
+      ignore_errors: true
+      mysql_user:
+        login_user: "root"
+        login_password: ""
+        user: "root"
+        password: "{{ mysql_root_password }}"
+        host_all: true
+
+
+    - name: "Mariadb - Removing Anonymous Users"
+      ignore_errors: true
+      mysql_user:
+        login_user: "root"
+        login_password: "{{ mysql_root_password }}"
+        user: ""
+        state: absent
+        host_all: true
+
+
+    - name: "Mariadb - Creating Database"
+      mysql_db:
+        login_user: "root"
+        login_password: "{{ mysql_root_password }}"
+        name: "{{ mysql_database }}"
+        state: present
+
+
+    - name: "Mariadb - Creating User"
+      mysql_user:
+        login_user: "root"
+        login_password: "{{ mysql_root_password }}"
+        name: "{{ mysql_user }}"
+        password: "{{ mysql_password }}"
+        host: "localhost"
+        priv: "{{ mysql_database }}.*:ALL"
+
+
+    - name: "Webserver - Installing Apache & PHP on"
+      yum:
+        name: 
+          - httpd
+          - php
+          - php-mysql
+        state: present
+
+
+    - name: "Webserver - Creating Virtualhost"
+      template:
+        src: virtualhost.j2
+        dest: "/etc/httpd/conf.d/{{ domain_name }}.conf"
+        owner: apache
+        group: apache
+
+
+    - name: "Webserver - Creating Documentroot"
+      file:
+        path: "/var/www/html/{{ domain_name }}"
+        state: directory
+        owner: apache
+        group: apache
+
+
+    - name: "Webserver - Restart/Enable Apache"
+      service:
+        name: httpd
+        state: restarted
+        enabled: true
+
+
+    - name: "Wordpress  - Downloading"
+      get_url:
+        url: https://wordpress.org/wordpress-4.7.8.tar.gz
+        dest: /tmp/wordpress.tar.gz
+
+
+    - name: "Wordpress - Extrating"
+      unarchive:
+        src: /tmp/wordpress.tar.gz
+        dest: /tmp/
+        remote_src: true
+
+
+    - name: "Wordpress - Copying Conents to documentroot"
+      copy:
+        src: /tmp/wordpress/
+        dest: "/var/www/html/{{ domain_name }}"
+        remote_src: true
+        owner: apache
+        group: apache
+
+
+    - name: "Wordpress - Copying wp-config.php template"
+      template:
+        src: wp-config.php.j2
+        dest: "/var/www/html/{{ domain_name }}/wp-config.php"
+        owner: apache
+        group: apache
+
+
+    - name: "Wordpress - Post Installation clean up"
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /tmp/wordpress.tar.gz
+        - /tmp/wordpress
